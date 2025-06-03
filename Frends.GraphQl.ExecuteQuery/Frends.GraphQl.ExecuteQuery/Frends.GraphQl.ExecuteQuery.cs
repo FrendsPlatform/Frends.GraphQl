@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
-using Frends.GraphQlExecuteQuery.Definitions;
+using Frends.GraphQl.ExecuteQuery.Definitions;
 
-namespace Frends.GraphQlExecuteQuery;
+namespace Frends.GraphQl.ExecuteQuery;
 
 /// <summary>
 /// Task class.

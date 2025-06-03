@@ -13,7 +13,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Description>Description of the Task</Description>
         <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/FrendsPlatform/Frends.GraphQl/tree/main/Frends.GraphQlExecuteQuery</RepositoryUrl>
+        <RepositoryUrl>https://github.com/FrendsPlatform/Frends.GraphQl/tree/main/Frends.GraphQl.ExecuteQuery</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

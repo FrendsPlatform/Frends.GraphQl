@@ -1,9 +1,9 @@
-# Frends.GraphQlExecuteQuery
+# Frends.GraphQl.ExecuteQuery
 
 Description of what the Task will do.
 
 [![ExecuteQuery_build](https://github.com/FrendsPlatform/Frends.GraphQl/actions/workflows/ExecuteQuery_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.GraphQl/actions/workflows/ExecuteQuery_build_and_test_on_main.yml)
-![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.GraphQl/Frends.GraphQlExecuteQuery|main)
+![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.GraphQl/Frends.GraphQl.ExecuteQuery|main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ## Installing

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.GraphQlExecuteQuery.Definitions;
+namespace Frends.GraphQl.ExecuteQuery.Definitions;
 
 // TODO: Remove this class if the task does not make connections
 

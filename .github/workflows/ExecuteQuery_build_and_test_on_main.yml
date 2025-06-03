@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'Frends.GraphQlExecuteQuery/**'
+      - 'Frends.GraphQl.ExecuteQuery/**'
   workflow_dispatch:
 
 jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_main.yml@main
     with:
-      workdir: Frends.GraphQlExecuteQuery
+      workdir: Frends.GraphQl.ExecuteQuery
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}

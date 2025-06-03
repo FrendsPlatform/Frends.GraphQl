@@ -1,4 +1,4 @@
-namespace Frends.GraphQlExecuteQuery.Definitions;
+namespace Frends.GraphQl.ExecuteQuery.Definitions;
 
 /// <summary>
 /// Error that occurred during the task.

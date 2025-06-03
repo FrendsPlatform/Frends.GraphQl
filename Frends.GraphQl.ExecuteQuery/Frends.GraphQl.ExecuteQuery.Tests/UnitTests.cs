@@ -1,8 +1,8 @@
 using System.Threading;
-using Frends.GraphQlExecuteQuery.Definitions;
+using Frends.GraphQl.ExecuteQuery.Definitions;
 using NUnit.Framework;
 
-namespace Frends.GraphQlExecuteQuery.Tests;
+namespace Frends.GraphQl.ExecuteQuery.Tests;
 
 [TestFixture]
 public class UnitTests
