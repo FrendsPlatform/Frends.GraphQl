@@ -92,8 +92,7 @@ public static class GraphQl
     {
         switch (connection.Method)
         {
-            case Method.Get:
-            {
+            case Method.Get: 
                 var encodedQuery = HttpUtility.UrlEncode(input.Query);
                 var variablesString = "{";
 
@@ -108,10 +107,7 @@ public static class GraphQl
                 var uri = new Uri($"{connection.EndpointUrl}?query={encodedQuery}&variables={encodedVariables}");
                 var request = new HttpRequestMessage(HttpMethod.Get, uri);
                 return request;
-            }
-
             case Method.Post:
-            {
                 var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
                 var payload = new
                 {
@@ -124,8 +120,6 @@ public static class GraphQl
                     Content = new StringContent(json, Encoding.UTF8, "application/json"),
                 };
                 return request;
-            }
-
             default:
                 throw new ArgumentOutOfRangeException(connection.Method.ToString());
         }
