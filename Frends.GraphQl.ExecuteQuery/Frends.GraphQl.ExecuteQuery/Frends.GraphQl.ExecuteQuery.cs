@@ -37,7 +37,7 @@ public static class GraphQl
     {
         try
         {
-            if (string.IsNullOrEmpty(connection.EndpointUrl)) throw new ArgumentNullException(connection.EndpointUrl, "Url can not be empty.");
+            if (string.IsNullOrEmpty(connection.EndpointUrl)) throw new ArgumentNullException(nameof(connection.EndpointUrl), "Url can not be empty.");
             var httpClient = CreateHttpClient(connection, options);
             var request = PrepareRequest(input, connection);
 
