@@ -7,8 +7,8 @@ public static class TestData
 {
     public const string SimpleQuery = "{users{name}}";
     public const string AdvancedQuery = "query ($surname: String!) {users(surname: $surname) {name}}";
-    private const string AdvancedOutputString = "{\"data\": {\"users\": [{\"name\": \"John\"},{\"name\": \"Marry\"}]}}";
-    private const string SimpleOutputString = "{ \"data\": { \"users\": [{ \"name\": \"John\"},{ \"name\": \"Marry\"},{ \"name\": \"Marry\"}]}}";
+    private const string AdvancedOutputString = """ {"data": {"users": [{"name": "John"},{"name": "Marry"}]}} """;
+    private const string SimpleOutputString = """ { "data": { "users": [{ "name": "John"},{ "name": "Marry"},{ "name": "Marry"}]}} """;
 
     public static JObject AdvancedOutputObject() => JObject.Parse(AdvancedOutputString);
 
