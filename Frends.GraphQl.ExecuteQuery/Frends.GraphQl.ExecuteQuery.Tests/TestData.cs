@@ -23,22 +23,22 @@ public static class TestData
                                                 """;
 
     private const string SimpleOutputString = """
-                                                  {
-                                                    "data": {
-                                                      "users": [
-                                                        {
-                                                          "name": "John"
-                                                        },
-                                                        {
-                                                          "name": "Marry"
-                                                        },
-                                                        {
-                                                          "name": "Marry"
-                                                        }
-                                                      ]
-                                                    }
+                                                {
+                                                  "data": {
+                                                    "users": [
+                                                      {
+                                                        "name": "John"
+                                                      },
+                                                      {
+                                                        "name": "Marry"
+                                                      },
+                                                      {
+                                                        "name": "Marry"
+                                                      }
+                                                    ]
                                                   }
-                                                """;
+                                                }
+                                              """;
 
     public static JObject AdvancedOutputObject() => JObject.Parse(AdvancedOutputString);
 

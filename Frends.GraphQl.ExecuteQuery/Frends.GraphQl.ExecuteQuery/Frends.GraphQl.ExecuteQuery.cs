@@ -101,6 +101,7 @@ public static class GraphQl
                     variablesString += $"\"{variable.Key}\" : \"{variable.Value}\",";
                 }
 
+                variablesString = variablesString.TrimEnd(',');
                 variablesString += "}";
 
                 var encodedVariables = HttpUtility.UrlEncode(variablesString);
