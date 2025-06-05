@@ -13,7 +13,7 @@ using Definitions;
 
 [TestFixture]
 public class IntegrationTests
-{ 
+{
     private readonly string dockerfileDir = Path.Combine(Directory.GetCurrentDirectory(), "docker");
     private IFutureDockerImage image;
     private IContainer container;

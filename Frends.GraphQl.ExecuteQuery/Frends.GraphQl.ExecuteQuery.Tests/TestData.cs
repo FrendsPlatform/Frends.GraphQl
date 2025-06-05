@@ -1,4 +1,4 @@
-using Definitions;
+using Frends.GraphQl.ExecuteQuery.Definitions;
 using Newtonsoft.Json.Linq;
 
 namespace Frends.GraphQl.ExecuteQuery.Tests;
@@ -21,6 +21,7 @@ public static class TestData
                                                     }
                                                   }
                                                 """;
+
     private const string SimpleOutputString = """
                                                   {
                                                     "data": {
@@ -38,13 +39,17 @@ public static class TestData
                                                     }
                                                   }
                                                 """;
+
     public static JObject AdvancedOutputObject() => JObject.Parse(AdvancedOutputString);
+
     public static JObject SimpleOutputObject() => JObject.Parse(SimpleOutputString);
+
     public static Input InitialInput() => new ()
     {
       Query = AdvancedQuery,
       Variables = [new Variable { Key = "surname", Value = "Doe" }],
     };
+
     public static Connection InitialConnection() => new ()
     {
       EndpointUrl = "http://localhost:4000",
@@ -55,7 +60,8 @@ public static class TestData
       Method = Method.Get,
       Headers = [],
     };
-    public static Options InitialOptions() => new () 
+
+    public static Options InitialOptions() => new ()
     {
       ThrowErrorOnFailure = false,
       ErrorMessageOnFailure = "test message",

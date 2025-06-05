@@ -92,21 +92,21 @@ public static class GraphQl
     {
         switch (connection.Method)
         {
-            case Method.Get: 
+            case Method.Get:
                 var encodedQuery = HttpUtility.UrlEncode(input.Query);
                 var variablesString = "{";
 
                 foreach (var variable in input.Variables)
                 {
-                    variablesString += $"\"{variable.Key}\" : \"{variable.Value}\"";
+                    variablesString += $"\"{variable.Key}\" : \"{variable.Value}\",";
                 }
 
                 variablesString += "}";
 
                 var encodedVariables = HttpUtility.UrlEncode(variablesString);
                 var uri = new Uri($"{connection.EndpointUrl}?query={encodedQuery}&variables={encodedVariables}");
-                var request = new HttpRequestMessage(HttpMethod.Get, uri);
-                return request;
+                var getRequest = new HttpRequestMessage(HttpMethod.Get, uri);
+                return getRequest;
             case Method.Post:
                 var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
                 var payload = new
@@ -115,11 +115,11 @@ public static class GraphQl
                     variables = variablesDictionary,
                 };
                 var json = JsonConvert.SerializeObject(payload);
-                var request = new HttpRequestMessage(HttpMethod.Post, connection.EndpointUrl)
+                var postRequest = new HttpRequestMessage(HttpMethod.Post, connection.EndpointUrl)
                 {
                     Content = new StringContent(json, Encoding.UTF8, "application/json"),
                 };
-                return request;
+                return postRequest;
             default:
                 throw new ArgumentOutOfRangeException(connection.Method.ToString());
         }
