@@ -1,6 +1,6 @@
 # Frends.GraphQl.ExecuteQuery
 
-Description of what the Task will do.
+GraphQl query will be executed after running this task.
 
 [![ExecuteQuery_build](https://github.com/FrendsPlatform/Frends.GraphQl/actions/workflows/ExecuteQuery_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.GraphQl/actions/workflows/ExecuteQuery_build_and_test_on_main.yml)
 ![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.GraphQl/Frends.GraphQl.ExecuteQuery|main)
@@ -22,7 +22,7 @@ You can install the Task via frends UI Task View.
 
 ### Run tests
 
-Run the tests
+Run Docker and run the tests
 
 `dotnet test`
 
