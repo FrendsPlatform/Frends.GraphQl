@@ -44,28 +44,28 @@ public static class TestData
 
     public static JObject SimpleOutputObject() => JObject.Parse(SimpleOutputString);
 
-    public static Input InitialInput() => new ()
+    public static Input InitialInput() => new()
     {
-      Query = AdvancedQuery,
-      Variables = [new Variable { Key = "surname", Value = "Doe" }],
+        Query = AdvancedQuery,
+        Variables = [new Variable { Key = "surname", Value = "Doe" }],
     };
 
-    public static Connection InitialConnection() => new ()
+    public static Connection InitialConnection() => new()
     {
-      EndpointUrl = "http://localhost:4000",
-      Authentication = Authentication.None,
-      Username = null,
-      Password = null,
-      BearerToken = null,
-      Method = Method.Get,
-      Headers = [],
+        EndpointUrl = "http://localhost:4000",
+        Authentication = Authentication.None,
+        Username = null,
+        Password = null,
+        BearerToken = null,
+        Method = Method.Get,
+        Headers = [],
     };
 
-    public static Options InitialOptions() => new ()
+    public static Options InitialOptions() => new()
     {
-      ThrowErrorOnFailure = false,
-      ErrorMessageOnFailure = "test message",
-      ConnectionTimeoutSeconds = 30,
-      AllowInvalidCertificate = true,
+        ThrowErrorOnFailure = false,
+        ErrorMessageOnFailure = "test message",
+        ConnectionTimeoutSeconds = 30,
+        AllowInvalidCertificate = true,
     };
 }
