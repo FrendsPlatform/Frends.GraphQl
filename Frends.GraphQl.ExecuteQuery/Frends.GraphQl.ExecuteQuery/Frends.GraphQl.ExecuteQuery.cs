@@ -1,27 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
 using Frends.GraphQl.ExecuteQuery.Definitions;
+using Frends.GraphQl.ExecuteQuery.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Frends.GraphQl.ExecuteQuery;
 
 /// <summary>
-/// Task class.
+/// Task class to execute a query in GraphQl.
 /// </summary>
 public static class GraphQl
 {
     /// <summary>
-    /// GraphQles the input string the specified number of times.
+    /// GraphQl query will be executed after running this task.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-GraphQl-ExecuteQuery)
     /// </summary>
-    /// <param name="input">Essential parameters.</param>
-    /// <param name="connection">Connection parameters.</param>
-    /// <param name="options">Additional parameters.</param>
+    /// <param name="input">Contains query and variables.</param>
+    /// <param name="connection">Connection info.</param>
+    /// <param name="options">Additional parameters for handling error and timeouts</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string Output, object Error { string Message, dynamic AdditionalInfo } }</returns>
-    // TODO: Remove Connection parameter if the task does not make connections
-    public static Result ExecuteQuery(
+    /// <returns>object { Header[] headers, JObject data, bool success, Error error }</returns>
+    public static async Task<Result> ExecuteQuery(
         [PropertyTab] Input input,
         [PropertyTab] Connection connection,
         [PropertyTab] Options options,
@@ -29,49 +37,116 @@ public static class GraphQl
     {
         try
         {
-            // TODO: Do something with connection parameters, e.g., connect to a service.
-            _ = connection.ConnectionString;
+            if (string.IsNullOrEmpty(connection.EndpointUrl)) throw new ArgumentNullException(connection.EndpointUrl, "Url can not be empty.");
+            var httpClient = CreateHttpClient(connection, options);
+            var request = PrepareRequest(input, connection);
 
-            // Cancellation token should be provided to methods that support it
-            // and checked during long-running operations, e.g., loops
-            cancellationToken.ThrowIfCancellationRequested();
+            var response = await httpClient.SendAsync(request, cancellationToken);
+            var responseHeaders = GetResponseHeaders(response.Headers, response.Content.Headers);
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            var contentObject = JObject.Parse(content);
 
-            var output = string.Join(options.Delimiter, Enumerable.Repeat(input.Content, input.Repeat));
-
-            return new Result
-            {
-                Success = true,
-                Output = output,
-                Error = null,
-            };
+            return new Result(responseHeaders, contentObject);
         }
-        catch (Exception e) when (e is not OperationCanceledException)
+        catch (Exception ex)
         {
-            if (options.ThrowErrorOnFailure)
-            {
-                if (string.IsNullOrEmpty(options.ErrorMessageOnFailure))
-                    throw;
+            return ErrorHandler.Handle(ex, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+        }
+    }
 
-                throw new Exception(options.ErrorMessageOnFailure, e);
+    private static HttpClient CreateHttpClient(Connection connection, Options options)
+    {
+        var handler = new HttpClientHandler();
+        if (options.AllowInvalidCertificate)
+            handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+        var httpClient = new HttpClient(handler);
+        httpClient.Timeout = TimeSpan.FromSeconds(Convert.ToDouble(options.ConnectionTimeoutSeconds));
+        foreach (var header in connection.Headers)
+        {
+            httpClient.DefaultRequestHeaders.Add(header.Name, header.Value);
+        }
+
+        var authHeader = CreateAuthenticationHeader(connection);
+        if (authHeader is not null) httpClient.DefaultRequestHeaders.Add(authHeader.Name, authHeader.Value);
+        return httpClient;
+    }
+
+    private static Header? CreateAuthenticationHeader(Connection connection)
+    {
+        var authHeader = new Header { Name = "Authorization" };
+        switch (connection.Authentication)
+        {
+            case Authentication.Basic:
+                authHeader.Value = $"Basic {Convert.ToBase64String(Encoding.ASCII.GetBytes($"{connection.Username}:{connection.Password}"))}";
+                return authHeader;
+            case Authentication.OAuth:
+                authHeader.Value = $"Bearer {connection.BearerToken}";
+                return authHeader;
+            case Authentication.None:
+            default:
+                return null;
+        }
+    }
+
+    private static HttpRequestMessage PrepareRequest(Input input, Connection connection)
+    {
+        switch (connection.Method)
+        {
+            case Method.Get:
+            {
+                var encodedQuery = HttpUtility.UrlEncode(input.Query);
+                var variablesString = "{";
+
+                foreach (var variable in input.Variables)
+                {
+                    variablesString += $"\"{variable.Key}\" : \"{variable.Value}\"";
+                }
+
+                variablesString += "}";
+
+                var encodedVariables = HttpUtility.UrlEncode(variablesString);
+                var uri = new Uri($"{connection.EndpointUrl}?query={encodedQuery}&variables={encodedVariables}");
+                var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                return request;
             }
 
-            var errorMessage = !string.IsNullOrEmpty(options.ErrorMessageOnFailure)
-                ? options.ErrorMessageOnFailure
-                : e.Message;
-
-            return new Result
+            case Method.Post:
             {
-                Success = false,
-                Output = null,
-                Error = new Error
+                var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
+                var payload = new
                 {
-                    Message = errorMessage,
-                    AdditionalInfo = new
-                    {
-                        Exception = e,
-                    },
-                },
-            };
+                    query = input.Query,
+                    variables = variablesDictionary,
+                };
+                var json = JsonConvert.SerializeObject(payload);
+                var request = new HttpRequestMessage(HttpMethod.Post, connection.EndpointUrl)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json"),
+                };
+                return request;
+            }
+
+            default:
+                throw new ArgumentOutOfRangeException(connection.Method.ToString());
         }
+    }
+
+    private static Header[] GetResponseHeaders(HttpResponseHeaders responseMessageHeaders, HttpContentHeaders contentHeaders)
+    {
+        var responseHeaders = responseMessageHeaders.ToDictionary(h => h.Key, h => string.Join(";", h.Value));
+        var allHeaders = contentHeaders.ToDictionary(h => h.Key, h => string.Join(";", h.Value));
+        responseHeaders.ToList().ForEach(x => allHeaders[x.Key] = x.Value);
+
+        var result = new List<Header>();
+        foreach (var header in allHeaders)
+        {
+            result.Add(new Header
+            {
+                Name = header.Key,
+                Value = header.Value,
+            });
+        }
+
+        return result.ToArray();
     }
 }

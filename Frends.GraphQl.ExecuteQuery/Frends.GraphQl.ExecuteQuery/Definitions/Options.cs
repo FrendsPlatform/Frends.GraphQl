@@ -9,14 +9,6 @@ namespace Frends.GraphQl.ExecuteQuery.Definitions;
 public class Options
 {
     /// <summary>
-    /// Delimiter to use between the repeated strings.
-    /// </summary>
-    /// <example>,</example>
-    [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue(" ")]
-    public string Delimiter { get; set; }
-
-    /// <summary>
     /// Whether to throw an error on failure.
     /// </summary>
     /// <example>false</example>
@@ -29,5 +21,18 @@ public class Options
     /// <example>Custom error message</example>
     [DisplayFormat(DataFormatString = "Text")]
     [DefaultValue("")]
-    public string ErrorMessageOnFailure { get; set; }
+    public string ErrorMessageOnFailure { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Timeout in seconds to be used for the connection and operation.
+    /// </summary>
+    /// <example>30</example>
+    [DefaultValue(30)]
+    public int ConnectionTimeoutSeconds { get; set; } = 30;
+
+    /// <summary>
+    /// Do not throw an exception on a certificate error.
+    /// </summary>
+    /// <example>true</example>
+    public bool AllowInvalidCertificate { get; init; }
 }

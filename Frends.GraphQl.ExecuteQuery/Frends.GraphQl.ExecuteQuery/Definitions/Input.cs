@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Frends.GraphQl.ExecuteQuery.Definitions;
 
@@ -9,17 +8,15 @@ namespace Frends.GraphQl.ExecuteQuery.Definitions;
 public class Input
 {
     /// <summary>
-    /// The input string to be repeated and output.
+    /// GraphQl Query
     /// </summary>
-    /// <example>foobar</example>
+    /// <example>query ($surname: String!) { users(surname: $surname) { id name } }</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("Lorem ipsum dolor sit amet.")]
-    public string Content { get; set; }
+    public required string Query { get; set; }
 
     /// <summary>
-    /// Number of times to repeat the input string.
+    /// GraphQl variables for query
     /// </summary>
-    /// <example>2</example>
-    [DefaultValue(3)]
-    public int Repeat { get; set; }
+    /// <example>[{"key" : "surname", "value" : "Doe"}]</example>
+    public Variable[] Variables { get; init; } = [];
 }
