@@ -20,8 +20,8 @@ public class Options
     /// </summary>
     /// <example>Custom error message</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("")]
-    public string ErrorMessageOnFailure { get; init; } = string.Empty;
+    [DefaultValue("GraphQl query process failed.")]
+    public string ErrorMessageOnFailure { get; init; } = "GraphQl query process failed.";
 
     /// <summary>
     /// Timeout in seconds to be used for the connection and operation.
@@ -34,5 +34,6 @@ public class Options
     /// Do not throw an exception on a certificate error.
     /// </summary>
     /// <example>true</example>
-    public bool AllowInvalidCertificate { get; init; }
+    [DefaultValue(false)]
+    public bool AllowInvalidCertificate { get; init; } = false;
 }

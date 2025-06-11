@@ -4,7 +4,7 @@ Frends tasks for GraphQl operations.
 
 # Tasks
 
-- [Frends.GraphQl.ExsecuteQuery](Frends.GraphQl.ExsecuteQuery/README.md)
+- [Frends.GraphQl.ExecuteQuery](Frends.GraphQl.ExecuteQuery/README.md)
 
 # Contributing
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.

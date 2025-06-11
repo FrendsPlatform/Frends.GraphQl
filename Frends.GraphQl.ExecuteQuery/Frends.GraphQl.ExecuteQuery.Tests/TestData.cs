@@ -10,34 +10,35 @@ public static class TestData
     private const string AdvancedOutputString =
 """
 {
-	"data": {
-		"users": [
-			{
-				"name": "John"
-			},
-			{
-				"name": "Marry"
-			}
-		]
-	}
+    "data": {
+        "users": [
+            {
+                "name": "John"
+            },
+            {
+                "name": "Marry"
+            }
+        ]
+    }
 }
 """;
+
     private const string SimpleOutputString =
 """
 {
-	"data": {
-		"users": [
-			{
-				"name": "John"
-			},
-			{
-				"name": "Marry"
-			},
-			{
-				"name": "Marry"
-			}
-		]
-	}
+    "data": {
+        "users": [
+            {
+                "name": "John"
+            },
+            {
+                "name": "Marry"
+            },
+            {
+                "name": "Marry"
+            }
+        ]
+    }
 }
 """;
 

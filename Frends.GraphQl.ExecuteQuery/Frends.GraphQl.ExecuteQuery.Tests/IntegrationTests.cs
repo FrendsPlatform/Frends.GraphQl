@@ -1,15 +1,14 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Images;
+using Frends.GraphQl.ExecuteQuery.Definitions;
 using NUnit.Framework;
 
 namespace Frends.GraphQl.ExecuteQuery.Tests;
-
-using System;
-using Definitions;
 
 [TestFixture]
 public class IntegrationTests
