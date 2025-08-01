@@ -20,8 +20,8 @@ public class Options
     /// </summary>
     /// <example>Custom error message</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("GraphQl query process failed.")]
-    public string ErrorMessageOnFailure { get; init; } = "GraphQl query process failed.";
+    [DefaultValue("")]
+    public string ErrorMessageOnFailure { get; init; }
 
     /// <summary>
     /// Timeout in seconds to be used for the connection and operation.
