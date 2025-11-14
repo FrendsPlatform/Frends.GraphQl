@@ -105,16 +105,45 @@ public static class GraphQl
                 var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
                 var variablesJson = JsonConvert.SerializeObject(variablesDictionary);
                 var encodedVariables = HttpUtility.UrlEncode(variablesJson);
-                var uri = new Uri($"{connection.EndpointUrl}?query={encodedQuery}&variables={encodedVariables}");
+
+                var queryString = $"query={encodedQuery}&variables={encodedVariables}";
+
+                if (!string.IsNullOrEmpty(input.OperationName))
+                {
+                    var encodedOperationName = HttpUtility.UrlEncode(input.OperationName);
+                    queryString += $"&operationName={encodedOperationName}";
+                }
+
+                if (input.Extensions.Length > 0)
+                {
+                    var extensionsDictionary = input.Extensions.ToDictionary(v => v.Key, v => v.Value);
+                    var extensionsJson = JsonConvert.SerializeObject(extensionsDictionary);
+                    var encodedExtensions = HttpUtility.UrlEncode(extensionsJson);
+                    queryString += $"&extensions={encodedExtensions}";
+                }
+
+                var uri = new Uri($"{connection.EndpointUrl}?{queryString}");
                 var getRequest = new HttpRequestMessage(HttpMethod.Get, uri);
                 return getRequest;
             case Method.Post:
                 var variablesDictionary2 = input.Variables.ToDictionary(v => v.Key, v => v.Value);
-                var payload = new
+                var payload = new Dictionary<string, object?>
                 {
-                    query = input.Query,
-                    variables = variablesDictionary2,
+                    ["query"] = input.Query,
+                    ["variables"] = variablesDictionary2,
                 };
+
+                if (!string.IsNullOrEmpty(input.OperationName))
+                {
+                    payload["operationName"] = input.OperationName;
+                }
+
+                if (input.Extensions.Length > 0)
+                {
+                    var extensionsDictionary2 = input.Extensions.ToDictionary(v => v.Key, v => v.Value);
+                    payload["extensions"] = extensionsDictionary2;
+                }
+
                 var json = JsonConvert.SerializeObject(payload);
                 var postRequest = new HttpRequestMessage(HttpMethod.Post, connection.EndpointUrl)
                 {

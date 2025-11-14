@@ -263,4 +263,46 @@ public class IntegrationTests
 
         async Task Action() => await GraphQl.ExecuteQuery(input, TestData.InitialConnection(), opt, CancellationToken.None);
     }
+
+    [Test]
+    public async Task PostRequestWithOperationNameRunsCorrectly()
+    {
+        var input = new Input
+        {
+            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables = [new Variable { Key = "surname", Value = "Doe" }],
+            OperationName = "GetDoeUsers",
+        };
+
+        var con = TestData.InitialConnection();
+        con.Method = Method.Post;
+
+        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        var users = result.Data?["data"]?["users"] as Newtonsoft.Json.Linq.JArray;
+        Assert.That(users, Is.Not.Null);
+        Assert.That(users.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetRequestWithOperationNameRunsCorrectly()
+    {
+        var input = new Input
+        {
+            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables = [new Variable { Key = "surname", Value = "Doe" }],
+            OperationName = "GetDoeUsers",
+        };
+
+        var con = TestData.InitialConnection();
+        con.Method = Method.Get;
+
+        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        var users = result.Data?["data"]?["users"] as Newtonsoft.Json.Linq.JArray;
+        Assert.That(users, Is.Not.Null);
+        Assert.That(users.Count, Is.EqualTo(2));
+    }
 }
