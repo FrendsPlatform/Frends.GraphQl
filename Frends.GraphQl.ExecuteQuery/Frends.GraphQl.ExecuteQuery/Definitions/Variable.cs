@@ -11,7 +11,7 @@ public class Variable
     public required string Key { get; init; }
 
     /// <summary>
-    /// Value of the variable
+    /// Value of the variable. Can be a string, number, boolean, object, or array.
     /// </summary>
-    public required string Value { get; init; }
+    public required object? Value { get; init; }
 }

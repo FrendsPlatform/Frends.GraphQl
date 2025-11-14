@@ -46,7 +46,15 @@ public static class GraphQl
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             var contentObject = JObject.Parse(content);
 
-            return new Result(responseHeaders, contentObject);
+            // Check for GraphQL errors in the response
+            var hasGraphQlErrors = contentObject["errors"] != null;
+            if (hasGraphQlErrors && options.ThrowErrorOnFailure)
+            {
+                var errorsJson = contentObject["errors"]?.ToString() ?? "Unknown GraphQL error";
+                throw new Exception($"GraphQL query returned errors: {errorsJson}");
+            }
+
+            return new Result(responseHeaders, contentObject, !hasGraphQlErrors);
         }
         catch (Exception ex)
         {
@@ -94,26 +102,18 @@ public static class GraphQl
         {
             case Method.Get:
                 var encodedQuery = HttpUtility.UrlEncode(input.Query);
-                var variablesString = "{";
-
-                foreach (var variable in input.Variables)
-                {
-                    variablesString += $"\"{variable.Key}\" : \"{variable.Value}\",";
-                }
-
-                variablesString = variablesString.TrimEnd(',');
-                variablesString += "}";
-
-                var encodedVariables = HttpUtility.UrlEncode(variablesString);
+                var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
+                var variablesJson = JsonConvert.SerializeObject(variablesDictionary);
+                var encodedVariables = HttpUtility.UrlEncode(variablesJson);
                 var uri = new Uri($"{connection.EndpointUrl}?query={encodedQuery}&variables={encodedVariables}");
                 var getRequest = new HttpRequestMessage(HttpMethod.Get, uri);
                 return getRequest;
             case Method.Post:
-                var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
+                var variablesDictionary2 = input.Variables.ToDictionary(v => v.Key, v => v.Value);
                 var payload = new
                 {
                     query = input.Query,
-                    variables = variablesDictionary,
+                    variables = variablesDictionary2,
                 };
                 var json = JsonConvert.SerializeObject(payload);
                 var postRequest = new HttpRequestMessage(HttpMethod.Post, connection.EndpointUrl)
