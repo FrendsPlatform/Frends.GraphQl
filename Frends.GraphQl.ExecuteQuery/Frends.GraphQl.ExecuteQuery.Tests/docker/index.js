@@ -27,8 +27,14 @@ const typeDefs = gql`
         surname: String
 	}
 
+	input UserFilter {
+		surname: String
+		name: String
+	}
+
 	type Query {
         users(surname: String): [User]
+		usersByFilter(filter: UserFilter): [User]
 	}
 `;
 
@@ -39,7 +45,17 @@ const resolvers = {
                 return data.users.filter(user => user.surname === args.surname);
             }
             return data.users;
-        }
+        },
+		usersByFilter: (_, args) => {
+			let filtered = data.users;
+			if (args.filter?.surname) {
+				filtered = filtered.filter(user => user.surname === args.filter.surname);
+			}
+			if (args.filter?.name) {
+				filtered = filtered.filter(user => user.name === args.filter.name);
+			}
+			return filtered;
+		}
     }
 };
 

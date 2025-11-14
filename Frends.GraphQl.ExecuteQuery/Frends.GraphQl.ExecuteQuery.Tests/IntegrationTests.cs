@@ -185,4 +185,124 @@ public class IntegrationTests
 
         Assert.That(result.Success, Is.False);
     }
+
+    [Test]
+    public async Task PostRequestWithObjectVariableRunsCorrectly()
+    {
+        var input = new Input
+        {
+            Query = "query($filter: UserFilter) { usersByFilter(filter: $filter) { name } }",
+            Variables = [new Variable { Key = "filter", Value = new { surname = "Doe", name = "John" } }],
+        };
+
+        var con = TestData.InitialConnection();
+        con.Method = Method.Post;
+
+        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        var users = result.Data?["data"]?["usersByFilter"] as Newtonsoft.Json.Linq.JArray;
+        Assert.That(users, Is.Not.Null);
+        Assert.That(users.Count, Is.EqualTo(1));
+        Assert.That(users[0]?["name"]?.ToString(), Is.EqualTo("John"));
+    }
+
+    [Test]
+    public async Task GetRequestWithObjectVariableRunsCorrectly()
+    {
+        var input = new Input
+        {
+            Query = "query($filter: UserFilter) { usersByFilter(filter: $filter) { name } }",
+            Variables = [new Variable { Key = "filter", Value = new { surname = "Doe" } }],
+        };
+
+        var con = TestData.InitialConnection();
+        con.Method = Method.Get;
+
+        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        var users = result.Data?["data"]?["usersByFilter"] as Newtonsoft.Json.Linq.JArray;
+        Assert.That(users, Is.Not.Null);
+        Assert.That(users.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GraphQLErrorReturnedWhenThrowOnFailureIsFalse()
+    {
+        var input = new Input
+        {
+            Query = "{ invalidField }",
+            Variables = [],
+        };
+
+        var opt = TestData.InitialOptions();
+        opt.ThrowErrorOnFailure = false;
+
+        var result = await GraphQl.ExecuteQuery(input, TestData.InitialConnection(), opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Data?["errors"], Is.Not.Null);
+    }
+
+    [Test]
+    public Task GraphQLErrorThrownWhenThrowOnFailureIsTrue()
+    {
+        var input = new Input
+        {
+            Query = "{ invalidField }",
+            Variables = [],
+        };
+
+        var opt = TestData.InitialOptions();
+        opt.ThrowErrorOnFailure = true;
+
+        Assert.ThrowsAsync<Exception>(Action);
+
+        return Task.CompletedTask;
+
+        async Task Action() => await GraphQl.ExecuteQuery(input, TestData.InitialConnection(), opt, CancellationToken.None);
+    }
+
+    [Test]
+    public async Task PostRequestWithOperationNameRunsCorrectly()
+    {
+        var input = new Input
+        {
+            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables = [new Variable { Key = "surname", Value = "Doe" }],
+            OperationName = "GetDoeUsers",
+        };
+
+        var con = TestData.InitialConnection();
+        con.Method = Method.Post;
+
+        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        var users = result.Data?["data"]?["users"] as Newtonsoft.Json.Linq.JArray;
+        Assert.That(users, Is.Not.Null);
+        Assert.That(users.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetRequestWithOperationNameRunsCorrectly()
+    {
+        var input = new Input
+        {
+            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables = [new Variable { Key = "surname", Value = "Doe" }],
+            OperationName = "GetDoeUsers",
+        };
+
+        var con = TestData.InitialConnection();
+        con.Method = Method.Get;
+
+        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        var users = result.Data?["data"]?["users"] as Newtonsoft.Json.Linq.JArray;
+        Assert.That(users, Is.Not.Null);
+        Assert.That(users.Count, Is.EqualTo(2));
+    }
 }

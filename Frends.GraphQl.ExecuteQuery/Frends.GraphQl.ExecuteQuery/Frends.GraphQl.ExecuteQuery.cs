@@ -46,7 +46,15 @@ public static class GraphQl
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             var contentObject = JObject.Parse(content);
 
-            return new Result(responseHeaders, contentObject);
+            // Check for GraphQL errors in the response
+            var hasGraphQlErrors = contentObject["errors"] != null;
+            if (hasGraphQlErrors && options.ThrowErrorOnFailure)
+            {
+                var errorsJson = contentObject["errors"]?.ToString() ?? "Unknown GraphQL error";
+                throw new Exception($"GraphQL query returned errors: {errorsJson}");
+            }
+
+            return new Result(responseHeaders, contentObject, !hasGraphQlErrors);
         }
         catch (Exception ex)
         {
@@ -94,27 +102,48 @@ public static class GraphQl
         {
             case Method.Get:
                 var encodedQuery = HttpUtility.UrlEncode(input.Query);
-                var variablesString = "{";
+                var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
+                var variablesJson = JsonConvert.SerializeObject(variablesDictionary);
+                var encodedVariables = HttpUtility.UrlEncode(variablesJson);
 
-                foreach (var variable in input.Variables)
+                var queryString = $"query={encodedQuery}&variables={encodedVariables}";
+
+                if (!string.IsNullOrEmpty(input.OperationName))
                 {
-                    variablesString += $"\"{variable.Key}\" : \"{variable.Value}\",";
+                    var encodedOperationName = HttpUtility.UrlEncode(input.OperationName);
+                    queryString += $"&operationName={encodedOperationName}";
                 }
 
-                variablesString = variablesString.TrimEnd(',');
-                variablesString += "}";
+                if (input.Extensions.Length > 0)
+                {
+                    var extensionsDictionary = input.Extensions.ToDictionary(v => v.Key, v => v.Value);
+                    var extensionsJson = JsonConvert.SerializeObject(extensionsDictionary);
+                    var encodedExtensions = HttpUtility.UrlEncode(extensionsJson);
+                    queryString += $"&extensions={encodedExtensions}";
+                }
 
-                var encodedVariables = HttpUtility.UrlEncode(variablesString);
-                var uri = new Uri($"{connection.EndpointUrl}?query={encodedQuery}&variables={encodedVariables}");
+                var uri = new Uri($"{connection.EndpointUrl}?{queryString}");
                 var getRequest = new HttpRequestMessage(HttpMethod.Get, uri);
                 return getRequest;
             case Method.Post:
-                var variablesDictionary = input.Variables.ToDictionary(v => v.Key, v => v.Value);
-                var payload = new
+                var variablesDictionary2 = input.Variables.ToDictionary(v => v.Key, v => v.Value);
+                var payload = new Dictionary<string, object?>
                 {
-                    query = input.Query,
-                    variables = variablesDictionary,
+                    ["query"] = input.Query,
+                    ["variables"] = variablesDictionary2,
                 };
+
+                if (!string.IsNullOrEmpty(input.OperationName))
+                {
+                    payload["operationName"] = input.OperationName;
+                }
+
+                if (input.Extensions.Length > 0)
+                {
+                    var extensionsDictionary2 = input.Extensions.ToDictionary(v => v.Key, v => v.Value);
+                    payload["extensions"] = extensionsDictionary2;
+                }
+
                 var json = JsonConvert.SerializeObject(payload);
                 var postRequest = new HttpRequestMessage(HttpMethod.Post, connection.EndpointUrl)
                 {
