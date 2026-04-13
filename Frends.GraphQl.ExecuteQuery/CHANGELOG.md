@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2026-04-13
+### Added
+- Add a new ClientCertificate connection option
+
 ## [2.0.0] - 2025-11-14
 ### Changed
 - **BREAKING**: Variable values now support complex types (objects, arrays) instead of only strings. Variables are properly serialized without double-serialization.
