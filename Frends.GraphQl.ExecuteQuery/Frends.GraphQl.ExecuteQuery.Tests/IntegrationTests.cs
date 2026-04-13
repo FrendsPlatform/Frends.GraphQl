@@ -385,17 +385,22 @@ public class IntegrationTests
     }
 
     [Test]
-    public async Task ClientCertificateAuthenticationReturnsErrorResultWhenThrowOnFailureIsFalse()
+    public Task ClientCertificateAuthenticationThrowsWhenInvalidPasswordProvided()
     {
+        var certPath = CreateTemporarySelfSignedCertificate("test-cert-wrong-password", "correct-password");
         var con = TestData.InitialConnection();
         con.Authentication = Authentication.ClientCertificate;
-        con.CertificatePath = "/nonexistent/path/client.pfx";
+        con.CertificatePath = certPath;
+        con.CertificatePassword = "wrong-password";
         var opt = TestData.InitialOptions();
-        opt.ThrowErrorOnFailure = false;
+        opt.ThrowErrorOnFailure = true;
 
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        Assert.ThrowsAsync<Exception>(Action);
 
-        Assert.That(result.Success, Is.False);
+        File.Delete(certPath);
+        return Task.CompletedTask;
+
+        async Task Action() => await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
     }
 
     private static string CreateTemporarySelfSignedCertificate(string subjectName, string password)
