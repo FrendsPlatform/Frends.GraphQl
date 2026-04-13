@@ -46,6 +46,22 @@ public class Connection
     public string? BearerToken { get; set; }
 
     /// <summary>
+    /// Path to the client certificate file (PFX/P12 format).
+    /// </summary>
+    /// <example>C:\certs\client.pfx</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    [UIHint(nameof(Authentication), "", Authentication.ClientCertificate)]
+    public string? CertificatePath { get; set; }
+
+    /// <summary>
+    /// Password for the client certificate file. Leave empty if the certificate has no password.
+    /// </summary>
+    /// <example>CertPassword123</example>
+    [PasswordPropertyText]
+    [UIHint(nameof(Authentication), "", Authentication.ClientCertificate)]
+    public string? CertificatePassword { get; set; }
+
+    /// <summary>
     /// The HTTP Method to be used with the request.
     /// </summary>
     /// <example>GET</example>

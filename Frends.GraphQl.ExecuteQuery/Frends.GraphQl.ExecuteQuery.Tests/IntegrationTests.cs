@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
@@ -304,5 +306,106 @@ public class IntegrationTests
         var users = result.Data?["data"]?["users"] as Newtonsoft.Json.Linq.JArray;
         Assert.That(users, Is.Not.Null);
         Assert.That(users.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task ClientCertificateAuthenticationWorksWithValidCertificate()
+    {
+        var certPath = CreateTemporarySelfSignedCertificate("test-cert-no-password", null);
+        try
+        {
+            var con = TestData.InitialConnection();
+            con.Authentication = Authentication.ClientCertificate;
+            con.CertificatePath = certPath;
+
+            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
+        }
+        finally
+        {
+            File.Delete(certPath);
+        }
+    }
+
+    [Test]
+    public async Task ClientCertificateAuthenticationWorksWithPasswordProtectedCertificate()
+    {
+        const string certPassword = "TestCertPassword123";
+        var certPath = CreateTemporarySelfSignedCertificate("test-cert-with-password", certPassword);
+        try
+        {
+            var con = TestData.InitialConnection();
+            con.Authentication = Authentication.ClientCertificate;
+            con.CertificatePath = certPath;
+            con.CertificatePassword = certPassword;
+
+            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
+        }
+        finally
+        {
+            File.Delete(certPath);
+        }
+    }
+
+    [Test]
+    public Task ClientCertificateAuthenticationThrowsWhenCertificatePathIsEmpty()
+    {
+        var con = TestData.InitialConnection();
+        con.Authentication = Authentication.ClientCertificate;
+        con.CertificatePath = string.Empty;
+        var opt = TestData.InitialOptions();
+        opt.ThrowErrorOnFailure = true;
+
+        Assert.ThrowsAsync<ArgumentNullException>(Action);
+
+        return Task.CompletedTask;
+
+        async Task Action() => await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+    }
+
+    [Test]
+    public Task ClientCertificateAuthenticationThrowsWhenCertificatePathIsInvalid()
+    {
+        var con = TestData.InitialConnection();
+        con.Authentication = Authentication.ClientCertificate;
+        con.CertificatePath = "/nonexistent/path/client.pfx";
+        var opt = TestData.InitialOptions();
+        opt.ThrowErrorOnFailure = true;
+
+        Assert.ThrowsAsync<Exception>(Action);
+
+        return Task.CompletedTask;
+
+        async Task Action() => await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+    }
+
+    [Test]
+    public async Task ClientCertificateAuthenticationReturnsErrorResultWhenThrowOnFailureIsFalse()
+    {
+        var con = TestData.InitialConnection();
+        con.Authentication = Authentication.ClientCertificate;
+        con.CertificatePath = "/nonexistent/path/client.pfx";
+        var opt = TestData.InitialOptions();
+        opt.ThrowErrorOnFailure = false;
+
+        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+    }
+
+    private static string CreateTemporarySelfSignedCertificate(string subjectName, string password)
+    {
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest($"CN={subjectName}", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
+        var pfxBytes = certificate.Export(X509ContentType.Pfx, password);
+        var tempPath = Path.Combine(Path.GetTempPath(), $"{subjectName}-{Guid.NewGuid()}.pfx");
+        File.WriteAllBytes(tempPath, pfxBytes);
+        return tempPath;
     }
 }

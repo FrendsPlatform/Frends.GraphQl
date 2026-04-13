@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,6 +68,17 @@ public static class GraphQl
         var handler = new HttpClientHandler();
         if (options.AllowInvalidCertificate)
             handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+
+        if (connection.Authentication == Authentication.ClientCertificate)
+        {
+            if (string.IsNullOrEmpty(connection.CertificatePath))
+                throw new ArgumentNullException(nameof(connection.CertificatePath), "Certificate path cannot be empty when using ClientCertificate authentication.");
+            var certificate = string.IsNullOrEmpty(connection.CertificatePassword)
+                ? new X509Certificate2(connection.CertificatePath)
+                : new X509Certificate2(connection.CertificatePath, connection.CertificatePassword);
+            handler.ClientCertificates.Add(certificate);
+        }
+
         var httpClient = new HttpClient(handler);
         httpClient.Timeout = TimeSpan.FromSeconds(Convert.ToDouble(options.ConnectionTimeoutSeconds));
         foreach (var header in connection.Headers)
@@ -91,6 +103,7 @@ public static class GraphQl
                 authHeader.Value = $"Bearer {connection.BearerToken}";
                 return authHeader;
             case Authentication.None:
+            case Authentication.ClientCertificate:
             default:
                 return null;
         }
