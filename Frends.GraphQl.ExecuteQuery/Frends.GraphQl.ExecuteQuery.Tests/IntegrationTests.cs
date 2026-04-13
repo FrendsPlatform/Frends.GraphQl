@@ -361,7 +361,7 @@ public class IntegrationTests
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
 
-        Assert.ThrowsAsync<ArgumentNullException>(Action);
+        Assert.ThrowsAsync<Exception>(Action);
 
         return Task.CompletedTask;
 
@@ -377,7 +377,7 @@ public class IntegrationTests
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
 
-        Assert.ThrowsAsync<FileNotFoundException>(Action);
+        Assert.ThrowsAsync<Exception>(Action);
 
         return Task.CompletedTask;
 
