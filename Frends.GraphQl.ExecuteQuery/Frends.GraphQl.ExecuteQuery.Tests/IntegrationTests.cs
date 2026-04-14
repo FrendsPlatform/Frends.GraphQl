@@ -311,6 +311,8 @@ public class IntegrationTests
     [Test]
     public async Task ClientCertificateAuthenticationWorksWithValidCertificate()
     {
+        var opt = TestData.InitialOptions();
+        opt.AllowInvalidCertificate = false;
         var certPath = CreateTemporarySelfSignedCertificate("test-cert-no-password", null);
         try
         {
@@ -318,7 +320,7 @@ public class IntegrationTests
             con.Authentication = Authentication.ClientCertificate;
             con.CertificatePath = certPath;
 
-            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
 
             Assert.That(result.Success, Is.True);
             Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
@@ -332,6 +334,8 @@ public class IntegrationTests
     [Test]
     public async Task ClientCertificateAuthenticationWorksWithPasswordProtectedCertificate()
     {
+        var opt = TestData.InitialOptions();
+        opt.AllowInvalidCertificate = false;
         const string certPassword = "TestCertPassword123";
         var certPath = CreateTemporarySelfSignedCertificate("test-cert-with-password", certPassword);
         try
@@ -341,7 +345,7 @@ public class IntegrationTests
             con.CertificatePath = certPath;
             con.CertificatePassword = certPassword;
 
-            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
 
             Assert.That(result.Success, Is.True);
             Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
@@ -376,6 +380,7 @@ public class IntegrationTests
         con.CertificatePath = "/nonexistent/path/client.pfx";
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
+        opt.AllowInvalidCertificate = false;
 
         Assert.ThrowsAsync<Exception>(Action);
 
@@ -394,6 +399,7 @@ public class IntegrationTests
         con.CertificatePassword = "wrong-password";
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
+        opt.AllowInvalidCertificate = false;
 
         Assert.ThrowsAsync<Exception>(Action);
 
