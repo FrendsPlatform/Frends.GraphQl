@@ -25,17 +25,6 @@ public class IntegrationTests
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
-        if (!File.Exists(Path.Combine(
-                dockerfileDir,
-                "Dockerfile")))
-        {
-            throw new FileNotFoundException(
-                "Integration test Dockerfile was not found.",
-                Path.Combine(
-                    dockerfileDir,
-                    "Dockerfile"));
-        }
-
         image = new ImageFromDockerfileBuilder()
             .WithDockerfileDirectory(dockerfileDir)
             .WithDockerfile("Dockerfile")
@@ -43,7 +32,7 @@ public class IntegrationTests
         await image.CreateAsync().ConfigureAwait(false);
         container = new ContainerBuilder()
             .WithImage(image)
-            .WithName($"graph-ql-tests-{Guid.NewGuid():N}")
+            .WithName("graph-ql-tests")
             .WithCleanUp(true)
             .WithPortBinding(
                 4000,
