@@ -5,6 +5,8 @@ namespace Frends.GraphQl.ExecuteQuery.Tests;
 
 public static class TestData
 {
+    public const string HttpsEndpointUrl = "https://localhost:4001";
+    public const string HttpEndpointUrl = "http://localhost:4000";
     public const string SimpleQuery = "{users{name}}";
     public const string AdvancedQuery = "query ($surname: String!) {users(surname: $surname) {name}}";
     private const string AdvancedOutputString =
@@ -54,7 +56,7 @@ public static class TestData
 
     public static Connection InitialConnection() => new()
     {
-        EndpointUrl = "http://localhost:4000",
+        EndpointUrl = HttpEndpointUrl,
         Authentication = Authentication.None,
         Username = null,
         Password = null,

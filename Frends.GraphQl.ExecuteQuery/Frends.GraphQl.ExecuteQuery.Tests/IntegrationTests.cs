@@ -15,13 +15,27 @@ namespace Frends.GraphQl.ExecuteQuery.Tests;
 [TestFixture]
 public class IntegrationTests
 {
-    private readonly string dockerfileDir = Path.Combine(Directory.GetCurrentDirectory(), "docker");
+    private readonly string dockerfileDir = Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "docker");
+
     private IFutureDockerImage image;
     private IContainer container;
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
+        if (!File.Exists(Path.Combine(
+                dockerfileDir,
+                "Dockerfile")))
+        {
+            throw new FileNotFoundException(
+                "Integration test Dockerfile was not found.",
+                Path.Combine(
+                    dockerfileDir,
+                    "Dockerfile"));
+        }
+
         image = new ImageFromDockerfileBuilder()
             .WithDockerfileDirectory(dockerfileDir)
             .WithDockerfile("Dockerfile")
@@ -29,10 +43,15 @@ public class IntegrationTests
         await image.CreateAsync().ConfigureAwait(false);
         container = new ContainerBuilder()
             .WithImage(image)
-            .WithName("graph-ql-tests")
+            .WithName($"graph-ql-tests-{Guid.NewGuid():N}")
             .WithCleanUp(true)
-            .WithPortBinding(4000, 4000)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(4000))
+            .WithPortBinding(
+                4000,
+                4000)
+            .WithPortBinding(
+                4001,
+                4001)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(4000).UntilPortIsAvailable(4001))
             .Build();
         await container.StartAsync();
     }
@@ -47,10 +66,18 @@ public class IntegrationTests
     [Test]
     public async Task GetRequestRunsCorrectly()
     {
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), TestData.InitialConnection(), TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            TestData.InitialConnection(),
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
+        Assert.That(
+            result.Success,
+            Is.True);
+        Assert.That(
+            result.Data,
+            Is.EquivalentTo(TestData.AdvancedOutputObject()));
     }
 
     [Test]
@@ -59,10 +86,18 @@ public class IntegrationTests
         var con = TestData.InitialConnection();
         con.Method = Method.Post;
 
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
+        Assert.That(
+            result.Success,
+            Is.True);
+        Assert.That(
+            result.Data,
+            Is.EquivalentTo(TestData.AdvancedOutputObject()));
     }
 
     [Test]
@@ -71,10 +106,18 @@ public class IntegrationTests
         var input = TestData.InitialInput();
         input.Query = TestData.SimpleQuery;
 
-        var result = await GraphQl.ExecuteQuery(input, TestData.InitialConnection(), TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            TestData.InitialConnection(),
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Data, Is.EquivalentTo(TestData.SimpleOutputObject()));
+        Assert.That(
+            result.Success,
+            Is.True);
+        Assert.That(
+            result.Data,
+            Is.EquivalentTo(TestData.SimpleOutputObject()));
     }
 
     [Test]
@@ -83,10 +126,18 @@ public class IntegrationTests
         var input = TestData.InitialInput();
         input.Query = TestData.AdvancedQuery;
 
-        var result = await GraphQl.ExecuteQuery(input, TestData.InitialConnection(), TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            TestData.InitialConnection(),
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
+        Assert.That(
+            result.Success,
+            Is.True);
+        Assert.That(
+            result.Data,
+            Is.EquivalentTo(TestData.AdvancedOutputObject()));
     }
 
     // We can't directly check the header value,
@@ -102,11 +153,21 @@ public class IntegrationTests
         con.Username = invalidUsername;
         con.Password = invalidPassword;
 
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Data, Is.Not.Null);
-        Assert.That(result.Data.ToString(), Contains.Substring(invalidUsername));
-        Assert.That(result.Data.ToString(), Contains.Substring(invalidPassword));
+        Assert.That(
+            result.Data,
+            Is.Not.Null);
+        Assert.That(
+            result.Data.ToString(),
+            Contains.Substring(invalidUsername));
+        Assert.That(
+            result.Data.ToString(),
+            Contains.Substring(invalidPassword));
     }
 
     // We can't directly check the header value,
@@ -120,10 +181,18 @@ public class IntegrationTests
         con.Authentication = Authentication.OAuth;
         con.BearerToken = invalidToken;
 
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Data, Is.Not.Null);
-        Assert.That(result.Data.ToString(), Contains.Substring(invalidToken));
+        Assert.That(
+            result.Data,
+            Is.Not.Null);
+        Assert.That(
+            result.Data.ToString(),
+            Contains.Substring(invalidToken));
     }
 
     // We can't directly check the header value,
@@ -137,14 +206,28 @@ public class IntegrationTests
         var con = TestData.InitialConnection();
         con.Headers =
         [
-            new Header { Name = headerKey, Value = headerValue },
+            new Header
+            {
+                Name = headerKey,
+                Value = headerValue,
+            },
         ];
 
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Data, Is.Not.Null);
-        Assert.That(result.Data.ToString(), Contains.Substring(headerKey));
-        Assert.That(result.Data.ToString(), Contains.Substring(headerValue));
+        Assert.That(
+            result.Data,
+            Is.Not.Null);
+        Assert.That(
+            result.Data.ToString(),
+            Contains.Substring(headerKey));
+        Assert.That(
+            result.Data.ToString(),
+            Contains.Substring(headerValue));
     }
 
     [Test]
@@ -159,7 +242,11 @@ public class IntegrationTests
 
         return Task.CompletedTask;
 
-        async Task Action() => await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        async Task Action() => await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            opt,
+            CancellationToken.None);
     }
 
     [Test]
@@ -170,9 +257,15 @@ public class IntegrationTests
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            opt,
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.False);
+        Assert.That(
+            result.Success,
+            Is.False);
     }
 
     // We can't directly check if ConnectionTimeoutSeconds is set correctly,
@@ -183,9 +276,15 @@ public class IntegrationTests
         var opt = TestData.InitialOptions();
         opt.ConnectionTimeoutSeconds = 0;
 
-        var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), TestData.InitialConnection(), opt, CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            TestData.InitialConnection(),
+            opt,
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.False);
+        Assert.That(
+            result.Success,
+            Is.False);
     }
 
     [Test]
@@ -194,19 +293,43 @@ public class IntegrationTests
         var input = new Input
         {
             Query = "query($filter: UserFilter) { usersByFilter(filter: $filter) { name } }",
-            Variables = [new Variable { Key = "filter", Value = new { surname = "Doe", name = "John" } }],
+            Variables =
+            [
+                new Variable
+                {
+                    Key = "filter",
+                    Value = new
+                    {
+                        surname = "Doe",
+                        name = "John",
+                    },
+                },
+            ],
         };
 
         var con = TestData.InitialConnection();
         con.Method = Method.Post;
 
-        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
+        Assert.That(
+            result.Success,
+            Is.True);
         var users = result.Data?["data"]?["usersByFilter"] as Newtonsoft.Json.Linq.JArray;
-        Assert.That(users, Is.Not.Null);
-        Assert.That(users.Count, Is.EqualTo(1));
-        Assert.That(users[0]?["name"]?.ToString(), Is.EqualTo("John"));
+        Assert.That(
+            users,
+            Is.Not.Null);
+        Assert.That(
+            users.Count,
+            Is.EqualTo(1));
+        Assert.That(
+            users[0]["name"]
+                ?.ToString(),
+            Is.EqualTo("John"));
     }
 
     [Test]
@@ -215,18 +338,38 @@ public class IntegrationTests
         var input = new Input
         {
             Query = "query($filter: UserFilter) { usersByFilter(filter: $filter) { name } }",
-            Variables = [new Variable { Key = "filter", Value = new { surname = "Doe" } }],
+            Variables =
+            [
+                new Variable
+                {
+                    Key = "filter",
+                    Value = new
+                    {
+                        surname = "Doe",
+                    },
+                },
+            ],
         };
 
         var con = TestData.InitialConnection();
         con.Method = Method.Get;
 
-        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
+        Assert.That(
+            result.Success,
+            Is.True);
         var users = result.Data?["data"]?["usersByFilter"] as Newtonsoft.Json.Linq.JArray;
-        Assert.That(users, Is.Not.Null);
-        Assert.That(users.Count, Is.EqualTo(2));
+        Assert.That(
+            users,
+            Is.Not.Null);
+        Assert.That(
+            users.Count,
+            Is.EqualTo(2));
     }
 
     [Test]
@@ -241,10 +384,18 @@ public class IntegrationTests
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await GraphQl.ExecuteQuery(input, TestData.InitialConnection(), opt, CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            TestData.InitialConnection(),
+            opt,
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.Data?["errors"], Is.Not.Null);
+        Assert.That(
+            result.Success,
+            Is.False);
+        Assert.That(
+            result.Data?["errors"],
+            Is.Not.Null);
     }
 
     [Test]
@@ -263,7 +414,12 @@ public class IntegrationTests
 
         return Task.CompletedTask;
 
-        async Task Action() => await GraphQl.ExecuteQuery(input, TestData.InitialConnection(), opt, CancellationToken.None);
+        async Task Action() =>
+            await GraphQl.ExecuteQuery(
+                input,
+                TestData.InitialConnection(),
+                opt,
+                CancellationToken.None);
     }
 
     [Test]
@@ -271,20 +427,38 @@ public class IntegrationTests
     {
         var input = new Input
         {
-            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
-            Variables = [new Variable { Key = "surname", Value = "Doe" }],
+            Query =
+                "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables =
+            [
+                new Variable
+                {
+                    Key = "surname",
+                    Value = "Doe",
+                },
+            ],
             OperationName = "GetDoeUsers",
         };
 
         var con = TestData.InitialConnection();
         con.Method = Method.Post;
 
-        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
+        Assert.That(
+            result.Success,
+            Is.True);
         var users = result.Data?["data"]?["users"] as Newtonsoft.Json.Linq.JArray;
-        Assert.That(users, Is.Not.Null);
-        Assert.That(users.Count, Is.EqualTo(2));
+        Assert.That(
+            users,
+            Is.Not.Null);
+        Assert.That(
+            users.Count,
+            Is.EqualTo(2));
     }
 
     [Test]
@@ -292,68 +466,94 @@ public class IntegrationTests
     {
         var input = new Input
         {
-            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
-            Variables = [new Variable { Key = "surname", Value = "Doe" }],
+            Query =
+                "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables =
+            [
+                new Variable
+                {
+                    Key = "surname",
+                    Value = "Doe",
+                },
+            ],
             OperationName = "GetDoeUsers",
         };
 
         var con = TestData.InitialConnection();
         con.Method = Method.Get;
 
-        var result = await GraphQl.ExecuteQuery(input, con, TestData.InitialOptions(), CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
+        Assert.That(
+            result.Success,
+            Is.True);
         var users = result.Data?["data"]?["users"] as Newtonsoft.Json.Linq.JArray;
-        Assert.That(users, Is.Not.Null);
-        Assert.That(users.Count, Is.EqualTo(2));
+        Assert.That(
+            users,
+            Is.Not.Null);
+        Assert.That(
+            users.Count,
+            Is.EqualTo(2));
     }
 
     [Test]
     public async Task ClientCertificateAuthenticationWorksWithValidCertificate()
     {
-        var opt = TestData.InitialOptions();
-        opt.AllowInvalidCertificate = false;
-        var certPath = CreateTemporarySelfSignedCertificate("test-cert-no-password", null);
-        try
-        {
-            var con = TestData.InitialConnection();
-            con.Authentication = Authentication.ClientCertificate;
-            con.CertificatePath = certPath;
+        var certPath = Path.Combine(
+            dockerfileDir,
+            "certs",
+            "client-cert.pfx");
+        var con = TestData.InitialConnection();
+        con.EndpointUrl = TestData.HttpsEndpointUrl;
+        con.Authentication = Authentication.ClientCertificate;
+        con.CertificatePath = certPath;
 
-            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
 
-            Assert.That(result.Success, Is.True);
-            Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
-        }
-        finally
-        {
-            File.Delete(certPath);
-        }
+        Assert.That(
+            result.Success,
+            Is.True);
+        Assert.That(
+            result.Data,
+            Is.EquivalentTo(TestData.AdvancedOutputObject()));
     }
 
     [Test]
     public async Task ClientCertificateAuthenticationWorksWithPasswordProtectedCertificate()
     {
-        var opt = TestData.InitialOptions();
-        opt.AllowInvalidCertificate = false;
         const string certPassword = "TestCertPassword123";
-        var certPath = CreateTemporarySelfSignedCertificate("test-cert-with-password", certPassword);
-        try
-        {
-            var con = TestData.InitialConnection();
-            con.Authentication = Authentication.ClientCertificate;
-            con.CertificatePath = certPath;
-            con.CertificatePassword = certPassword;
+        var certPath = CreateTemporarySelfSignedCertificate(
+            "frends-client-cert",
+            certPassword);
 
-            var result = await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        var con = TestData.InitialConnection();
+        con.Authentication = Authentication.ClientCertificate;
+        con.CertificatePath = certPath;
+        con.CertificatePassword = certPassword;
+        con.EndpointUrl = TestData.HttpsEndpointUrl;
 
-            Assert.That(result.Success, Is.True);
-            Assert.That(result.Data, Is.EquivalentTo(TestData.AdvancedOutputObject()));
-        }
-        finally
-        {
-            File.Delete(certPath);
-        }
+        var result = await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            TestData.InitialOptions(),
+            CancellationToken.None);
+
+        Assert.That(
+            result.Success,
+            Is.True);
+        Assert.That(
+            result.Data,
+            Is.EquivalentTo(TestData.AdvancedOutputObject()));
+
+        File.Delete(certPath);
     }
 
     [Test]
@@ -362,6 +562,7 @@ public class IntegrationTests
         var con = TestData.InitialConnection();
         con.Authentication = Authentication.ClientCertificate;
         con.CertificatePath = string.Empty;
+        con.EndpointUrl = TestData.HttpsEndpointUrl;
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
 
@@ -369,7 +570,11 @@ public class IntegrationTests
 
         return Task.CompletedTask;
 
-        async Task Action() => await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        async Task Action() => await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            opt,
+            CancellationToken.None);
     }
 
     [Test]
@@ -378,45 +583,71 @@ public class IntegrationTests
         var con = TestData.InitialConnection();
         con.Authentication = Authentication.ClientCertificate;
         con.CertificatePath = "/nonexistent/path/client.pfx";
+        con.EndpointUrl = TestData.HttpsEndpointUrl;
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
-        opt.AllowInvalidCertificate = false;
 
         Assert.ThrowsAsync<Exception>(Action);
 
         return Task.CompletedTask;
 
-        async Task Action() => await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        async Task Action() => await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            opt,
+            CancellationToken.None);
     }
 
     [Test]
     public Task ClientCertificateAuthenticationThrowsWhenInvalidPasswordProvided()
     {
-        var certPath = CreateTemporarySelfSignedCertificate("test-cert-wrong-password", "correct-password");
+        var certPath = CreateTemporarySelfSignedCertificate(
+            "test-cert-wrong-password",
+            "correct-password");
         var con = TestData.InitialConnection();
         con.Authentication = Authentication.ClientCertificate;
         con.CertificatePath = certPath;
         con.CertificatePassword = "wrong-password";
+        con.EndpointUrl = TestData.HttpsEndpointUrl;
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
-        opt.AllowInvalidCertificate = false;
 
         Assert.ThrowsAsync<Exception>(Action);
 
         File.Delete(certPath);
+
         return Task.CompletedTask;
 
-        async Task Action() => await GraphQl.ExecuteQuery(TestData.InitialInput(), con, opt, CancellationToken.None);
+        async Task Action() => await GraphQl.ExecuteQuery(
+            TestData.InitialInput(),
+            con,
+            opt,
+            CancellationToken.None);
     }
 
     private static string CreateTemporarySelfSignedCertificate(string subjectName, string password)
     {
         using var rsa = RSA.Create(2048);
-        var request = new CertificateRequest($"CN={subjectName}", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));
-        var pfxBytes = certificate.Export(X509ContentType.Pfx, password);
-        var tempPath = Path.Combine(Path.GetTempPath(), $"{subjectName}-{Guid.NewGuid()}.pfx");
-        File.WriteAllBytes(tempPath, pfxBytes);
+        var request =
+            new CertificateRequest(
+                $"CN={subjectName}",
+                rsa,
+                HashAlgorithmName.SHA256,
+                RSASignaturePadding.Pkcs1);
+        using var certificate =
+            request.CreateSelfSigned(
+                DateTimeOffset.UtcNow.AddDays(-1),
+                DateTimeOffset.UtcNow.AddYears(1));
+        var pfxBytes = certificate.Export(
+            X509ContentType.Pfx,
+            password);
+        var tempPath = Path.Combine(
+            Path.GetTempPath(),
+            $"{subjectName}-{Guid.NewGuid()}.pfx");
+        File.WriteAllBytes(
+            tempPath,
+            pfxBytes);
+
         return tempPath;
     }
 }

@@ -1,4 +1,7 @@
 const { ApolloServer, gql, AuthenticationError } = require('apollo-server');
+const fs = require('fs');
+const https = require('https');
+const path = require('path');
 
 const data = {
     "users": [
@@ -63,6 +66,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const context = async ({ req }) => {
     await sleep(1000);
+
     const authHeader = req.headers.authorization || "";
     if (authHeader.startsWith("Bearer ")) {
         const token = authHeader.split(" ")[1];
@@ -82,7 +86,42 @@ const context = async ({ req }) => {
     if (customHeader && customHeader !== "Bar") {
         throw new AuthenticationError("Invalid Custom header. Key: Foo, Value: " + customHeader);
     }
-}
+};
 
-const server = new ApolloServer({ typeDefs, resolvers, context });
-server.listen(4000);
+const certDir = path.join(__dirname, 'certs');
+const httpsOptions = {
+    key: fs.readFileSync(path.join(certDir, 'server-key.pem')),
+    cert: fs.readFileSync(path.join(certDir, 'server-cert.pem')),
+    requestCert: true,
+    rejectUnauthorized: false,
+};
+
+const start = async () => {
+    const httpServer = new ApolloServer({ typeDefs, resolvers, context });
+    await httpServer.listen(4000);
+
+    const httpsServer = https.createServer(httpsOptions, (req, res) => {
+        const clientCertificate = req.socket?.getPeerCertificate?.();
+        const clientCertificateIsValid = !!clientCertificate && Object.keys(clientCertificate).length > 0 && clientCertificate.subject?.CN === 'frends-client-cert';
+
+        if (!clientCertificateIsValid) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ errors: [{ message: 'Client certificate is missing or invalid.' }] }));
+            return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            data: {
+                users: [
+                    { name: 'John' },
+                    { name: 'Marry' },
+                ],
+            },
+        }));
+    });
+
+    await new Promise(resolve => httpsServer.listen(4001, resolve));
+};
+
+start();
