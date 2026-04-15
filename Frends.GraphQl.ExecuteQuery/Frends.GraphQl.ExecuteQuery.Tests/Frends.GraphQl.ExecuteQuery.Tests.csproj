@@ -27,7 +27,7 @@
 
     <ItemGroup>
         <Content Include="./docker/**">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 

@@ -35,5 +35,5 @@ public class Options
     /// </summary>
     /// <example>true</example>
     [DefaultValue(false)]
-    public bool AllowInvalidCertificate { get; init; } = false;
+    public bool AllowInvalidCertificate { get; set; } = false;
 }

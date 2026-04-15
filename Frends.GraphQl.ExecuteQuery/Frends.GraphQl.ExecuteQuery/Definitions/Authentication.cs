@@ -19,4 +19,9 @@ public enum Authentication
     /// OAuth authentication.
     /// </summary>
     OAuth,
+
+    /// <summary>
+    /// Client certificate authentication.
+    /// </summary>
+    ClientCertificate,
 }
