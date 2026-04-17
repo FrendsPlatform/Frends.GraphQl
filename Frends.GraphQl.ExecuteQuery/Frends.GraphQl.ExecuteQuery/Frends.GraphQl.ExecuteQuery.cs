@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -39,6 +40,8 @@ public static class GraphQl
         try
         {
             if (string.IsNullOrEmpty(connection.EndpointUrl)) throw new ArgumentNullException(nameof(connection.EndpointUrl), "Url can not be empty.");
+            if (HasMultipleOperations(input.Query) && string.IsNullOrEmpty(input.OperationName))
+                throw new ArgumentNullException(nameof(input.OperationName), "OperationName is required when the query contains multiple operations.");
             var httpClient = CreateHttpClient(connection, options);
             var request = PrepareRequest(input, connection);
 
@@ -166,6 +169,12 @@ public static class GraphQl
             default:
                 throw new ArgumentOutOfRangeException(connection.Method.ToString());
         }
+    }
+
+    private static bool HasMultipleOperations(string query)
+    {
+        var matches = Regex.Matches(query, @"\b(query|mutation|subscription)\b", RegexOptions.IgnoreCase);
+        return matches.Count > 1;
     }
 
     private static Header[] GetResponseHeaders(HttpResponseHeaders responseMessageHeaders, HttpContentHeaders contentHeaders)

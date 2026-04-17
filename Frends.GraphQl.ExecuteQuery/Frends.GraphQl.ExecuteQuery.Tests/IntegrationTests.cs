@@ -614,6 +614,66 @@ public class IntegrationTests
             CancellationToken.None);
     }
 
+    [Test]
+    public Task WhenMultipleOperationsAndNoOperationName_ThrowsWhenThrowOnFailureIsTrue()
+    {
+        var input = new Input
+        {
+            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables =
+            [
+                new Variable
+                {
+                    Key = "surname",
+                    Value = "Doe",
+                },
+            ],
+        };
+
+        var opt = TestData.InitialOptions();
+        opt.ThrowErrorOnFailure = true;
+
+        Assert.ThrowsAsync<Exception>(Action);
+
+        return Task.CompletedTask;
+
+        async Task Action() => await GraphQl.ExecuteQuery(
+            input,
+            TestData.InitialConnection(),
+            opt,
+            CancellationToken.None);
+    }
+
+    [Test]
+    public async Task WhenMultipleOperationsAndNoOperationName_ReturnsFailureWhenThrowOnFailureIsFalse()
+    {
+        var input = new Input
+        {
+            Query = "query GetDoeUsers($surname: String!) { users(surname: $surname) { name } } query GetAllUsers { users { name } }",
+            Variables =
+            [
+                new Variable
+                {
+                    Key = "surname",
+                    Value = "Doe",
+                },
+            ],
+        };
+
+        var opt = TestData.InitialOptions();
+        opt.ThrowErrorOnFailure = false;
+
+        var result = await GraphQl.ExecuteQuery(
+            input,
+            TestData.InitialConnection(),
+            opt,
+            CancellationToken.None);
+
+        Assert.That(
+            result.Success,
+            Is.False);
+    }
+
     private static string CreateTemporarySelfSignedCertificate(string subjectName, string password)
     {
         using var rsa = RSA.Create(2048);
