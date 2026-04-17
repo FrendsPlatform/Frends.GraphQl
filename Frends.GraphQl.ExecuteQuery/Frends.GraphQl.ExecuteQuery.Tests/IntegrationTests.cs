@@ -633,7 +633,7 @@ public class IntegrationTests
         var opt = TestData.InitialOptions();
         opt.ThrowErrorOnFailure = true;
 
-        Assert.ThrowsAsync<Exception>(Action);
+        Assert.ThrowsAsync<ArgumentNullException>(Action);
 
         return Task.CompletedTask;
 

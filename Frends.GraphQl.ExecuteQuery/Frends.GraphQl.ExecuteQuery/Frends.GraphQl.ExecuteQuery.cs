@@ -173,7 +173,7 @@ public static class GraphQl
 
     private static bool HasMultipleOperations(string query)
     {
-        var matches = Regex.Matches(query, @"\b(query|mutation|subscription)\b", RegexOptions.IgnoreCase);
+        var matches = Regex.Matches(query, @"\b(query|mutation|subscription)\s+\w+", RegexOptions.IgnoreCase);
         return matches.Count > 1;
     }
 
