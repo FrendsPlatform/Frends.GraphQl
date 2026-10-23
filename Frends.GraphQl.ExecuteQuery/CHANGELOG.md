@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2026-10-23
+### Changed
+- Updated package metadata and improved documentation examples for Header and Variable parameters.
+
 ## [2.1.0] - 2026-04-13
 ### Added
 - Add a new ClientCertificate connection option
