@@ -21,7 +21,7 @@ public class Options
     /// <example>Custom error message</example>
     [DisplayFormat(DataFormatString = "Text")]
     [DefaultValue("")]
-    public string ErrorMessageOnFailure { get; init; }
+    public string ErrorMessageOnFailure { get; init; } = string.Empty;
 
     /// <summary>
     /// Timeout in seconds to be used for the connection and operation.
