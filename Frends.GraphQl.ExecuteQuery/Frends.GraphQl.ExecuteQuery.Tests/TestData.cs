@@ -48,13 +48,13 @@ public static class TestData
 
     public static JObject SimpleOutputObject() => JObject.Parse(SimpleOutputString);
 
-    public static Input InitialInput() => new()
+    public static Input InitialInput() => new Input
     {
         Query = AdvancedQuery,
-        Variables = [new Variable { Key = "surname", Value = "Doe" }],
+        Variables = new[] { new Variable { Key = "surname", Value = "Doe" } },
     };
 
-    public static Connection InitialConnection() => new()
+    public static Connection InitialConnection() => new Connection
     {
         EndpointUrl = HttpEndpointUrl,
         Authentication = Authentication.None,
@@ -62,10 +62,10 @@ public static class TestData
         Password = null,
         BearerToken = null,
         Method = Method.Get,
-        Headers = [],
+        Headers = System.Array.Empty<Header>(),
     };
 
-    public static Options InitialOptions() => new()
+    public static Options InitialOptions() => new Options
     {
         ThrowErrorOnFailure = false,
         ErrorMessageOnFailure = "test message",

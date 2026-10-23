@@ -72,5 +72,5 @@ public class Connection
     /// List of HTTP headers to be added to the request.
     /// </summary>
     /// <example>Name: Header, Value: HeaderValue</example>
-    public Header[] Headers { get; set; } = [];
+    public Header[] Headers { get; set; } = System.Array.Empty<Header>();
 }

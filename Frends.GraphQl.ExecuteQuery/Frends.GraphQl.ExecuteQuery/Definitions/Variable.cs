@@ -9,11 +9,11 @@ public class Variable
     /// Key of the variable
     /// </summary>
     /// <example>userId</example>
-    public required string Key { get; init; }
+    required public string Key { get; init; }
 
     /// <summary>
     /// Value of the variable. Can be a string, number, boolean, object, or array.
     /// </summary>
     /// <example>42</example>
-    public required object? Value { get; init; }
+    required public object? Value { get; init; }
 }

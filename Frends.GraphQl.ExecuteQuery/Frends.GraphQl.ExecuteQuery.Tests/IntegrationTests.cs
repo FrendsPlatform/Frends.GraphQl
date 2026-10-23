@@ -367,7 +367,7 @@ public class IntegrationTests
         var input = new Input
         {
             Query = "{ invalidField }",
-            Variables = [],
+            Variables = System.Array.Empty<Variable>(),
         };
 
         var opt = TestData.InitialOptions();
@@ -393,7 +393,7 @@ public class IntegrationTests
         var input = new Input
         {
             Query = "{ invalidField }",
-            Variables = [],
+            Variables = System.Array.Empty<Variable>(),
         };
 
         var opt = TestData.InitialOptions();

@@ -9,7 +9,7 @@ public class Header
     /// Name of header.
     /// </summary>
     /// <example>Content-Type</example>
-    public required string Name { get; init; }
+    required public string Name { get; init; }
 
     /// <summary>
     /// Value of the header.

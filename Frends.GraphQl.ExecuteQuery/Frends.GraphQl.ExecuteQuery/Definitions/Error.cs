@@ -9,11 +9,11 @@ public class Error
     /// Summary of the error.
     /// </summary>
     /// <example>Unable to join strings.</example>
-    public required string Message { get; set; }
+    required public string Message { get; set; }
 
     /// <summary>
     /// Additional information about the error.
     /// </summary>
     /// <example>object { Exception Exception }</example>
-    public required dynamic AdditionalInfo { get; set; }
+    required public dynamic AdditionalInfo { get; set; }
 }
