@@ -7,6 +7,13 @@ namespace Frends.GraphQl.ExecuteQuery.Definitions;
 /// </summary>
 public class Result
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Result"/> class.
+    /// </summary>
+    /// <param name="headers">Response headers.</param>
+    /// <param name="data">Response data.</param>
+    /// <param name="success">Indicates success.</param>
+    /// <param name="error">Error details.</param>
     internal Result(Header[] headers, JObject? data = null, bool success = true, Error? error = null)
     {
         Success = success;
