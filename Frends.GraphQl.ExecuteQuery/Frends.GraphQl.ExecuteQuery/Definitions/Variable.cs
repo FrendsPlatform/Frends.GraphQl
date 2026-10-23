@@ -7,11 +7,13 @@ public class Variable
 {
     /// <summary>
     /// Key of the variable
+    /// <example>userId</example>
     /// </summary>
     public required string Key { get; init; }
 
     /// <summary>
     /// Value of the variable. Can be a string, number, boolean, object, or array.
+    /// <example>123</example>
     /// </summary>
     public required object? Value { get; init; }
-}
+}
